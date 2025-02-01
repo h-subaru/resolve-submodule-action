@@ -1,0 +1,24 @@
+name: Resolve the submodule by name in the repository.
+inputs:
+  name:
+    required: true
+
+outputs:
+  path:
+    value: "${{ steps.tree-fields.outputs.path }}"
+  ref:
+    value: "${{ steps.tree-fields.outputs.ref }}"
+
+runs:
+  using: composite
+  steps:
+    - id: "locate-tree"
+      shell: bash
+      run: |
+        printf "pathname=%s\n" $(git config -f .gitmodules --get 'submodule.${{ inputs.name }}.path') >> $GITHUB_OUTPUT
+    - id: "tree-fields"
+      shell: bash
+      run: |
+        git ls-tree --format 'path=%(path)' HEAD "${{ steps.locate-tree.outputs.pathname }}" >> $GITHUB_OUTPUT
+        git ls-tree --format 'ref=%(objectname)' HEAD "${{ steps.locate-tree.outputs.pathname }}" >> $GITHUB_OUTPUT
+        
