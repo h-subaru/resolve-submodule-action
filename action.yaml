@@ -2,11 +2,14 @@ name: Resolve the submodule by name in the repository.
 inputs:
   name:
     required: true
+    description: "The submodule name, found in the section name in .gitmodules"
 
 outputs:
   path:
+    description: "Path of the submodule relative to superproject"
     value: "${{ steps.tree-fields.outputs.path }}"
   ref:
+    description: "Ref of the commit in the submodule, that the superproject holds"
     value: "${{ steps.tree-fields.outputs.ref }}"
   url:
     value: "${{ steps.tree-fields.outputs.url }}"
@@ -14,6 +17,7 @@ runs:
   using: composite
   steps:
     - id: "locate-tree"
+      name: "Locate the tree object that represents the submodule."
       shell: bash
       run: |
         printf "pathname=%s\n" $(git config -f .gitmodules --get 'submodule.${{ inputs.name }}.path') >> $GITHUB_OUTPUT
