@@ -1,0 +1,38 @@
+name: Resolve the submodule by name in the repository.
+inputs:
+  name:
+    required: true
+    description: "The submodule name, found in the section name in .gitmodules"
+
+outputs:
+  path:
+    description: "Path of the submodule relative to superproject"
+    value: "${{ steps.tree-fields.outputs.path }}"
+  ref:
+    description: "Ref of the commit in the submodule, that the superproject holds"
+    value: "${{ steps.tree-fields.outputs.ref }}"
+  url:
+    value: "${{ steps.tree-fields.outputs.url }}"
+runs:
+  using: composite
+  steps:
+    - id: "locate-tree"
+      name: "Locate the tree object that represents the submodule."
+      shell: bash
+      run: |
+        printf "pathname=%s\n" $(git config -f .gitmodules --get 'submodule.${{ inputs.name }}.path') >> $GITHUB_OUTPUT
+    - name: Rejects invalid name
+      if: ${{ steps.locate-tree.outputs.pathname == '' }}
+      shell: bash
+      run: |
+        echo "::error line=22::${{ format('the name {0} is not defined in the HEAD.', inputs.name) }}"
+        exit 1
+    - id: "tree-fields"
+      if: ${{ success() }}
+      name: Describes the the submodule ref
+      shell: bash
+      run: |
+        printf "url=%s\n" $(git config -f .gitmodules --get 'submodule.${{ inputs.name }}.url') >> $GITHUB_OUTPUT
+        git ls-tree --format 'path=%(path)' HEAD "${{ steps.locate-tree.outputs.pathname }}" >> $GITHUB_OUTPUT
+        git ls-tree --format 'ref=%(objectname)' HEAD "${{ steps.locate-tree.outputs.pathname }}" >> $GITHUB_OUTPUT
+        
