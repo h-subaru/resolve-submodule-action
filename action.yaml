@@ -24,10 +24,13 @@ runs:
         git config -f .gitmodules --get 'submodule.${{ env.name }}.path' | sed -En "/^$/q1; s/^(.*)$/path=\1/;p;" >> $GITHUB_OUTPUT
         git config -f .gitmodules --get 'submodule.${{ env.name }}.url' | sed -En "/^$/q1; s/^(.*)$/url=\1/;p;" >> $GITHUB_OUTPUT
     - name: Rejects invalid name
-      if: ${{ steps.locate-tree.outputs.pathname == '' }}
+      if: ${{ env.path == '' }}
       shell: bash
+      env:
+        name: ${{ inputs.name }}
+        path: ${{ steps.gitmodules.outputs.path }}
       run: |
-        echo "::error line=22::${{ format('the name {0} is not defined in the HEAD.', inputs.name) }}"
+        echo "::error::${{ format('the name {0} is ambiguous in the HEAD.', env.name) }}"
         exit 1
     - id: head
       if: ${{ success() }}
