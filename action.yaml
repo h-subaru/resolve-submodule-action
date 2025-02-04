@@ -35,6 +35,13 @@ runs:
       run: |
         echo "::error::${{ format('the name {0} is ambiguous in the HEAD.', env.name) }}"
         exit 1
+    - env:
+        url: ${{ steps.gitmodules.outputs.url }}
+      shell: bash
+      if: ${{ ! startsWith(env.url, 'https://github.com/') }}
+      run: |
+        echo "::error::${{ format('URL {0} is not supported.', env.url) }}"
+        exit 1
     - id: head
       if: ${{ success() }}
       name: Describes the the submodule ref
@@ -51,4 +58,5 @@ runs:
       if: ${{ success() }}
       run: |
         echo ${{ env.url }} | sed -En "s/^https\:\/\/github\.com\/(.+)$/\1/; s/^(.+)(\.git)?$/repository=\1/;p;" >> $GITHUB_OUTPUT
+      
  
