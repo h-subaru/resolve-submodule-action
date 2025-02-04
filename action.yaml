@@ -7,32 +7,58 @@ inputs:
 outputs:
   path:
     description: "Path of the submodule relative to superproject"
-    value: "${{ steps.tree-fields.outputs.path }}"
+    value: "${{ steps.gitmodules.outputs.path }}"
   ref:
     description: "Ref of the commit in the submodule, that the superproject holds"
-    value: "${{ steps.tree-fields.outputs.ref }}"
+    value: "${{ steps.head.outputs.ref }}"
+  repository:
+    description: "Git repository name from where to clone the submodule contents"
+    value: "${{ steps.url.outputs.repository }}" 
   url:
-    value: "${{ steps.tree-fields.outputs.url }}"
+    value: "${{ steps.gitmodules.outputs.url }}"
 runs:
   using: composite
   steps:
-    - id: "locate-tree"
-      name: "Locate the tree object that represents the submodule."
-      shell: bash
+    - name: Provide outputs
+      id: gitmodules
+      env:
+        name: ${{ inputs.name }}
       run: |
-        printf "pathname=%s\n" $(git config -f .gitmodules --get 'submodule.${{ inputs.name }}.path') >> $GITHUB_OUTPUT
-    - name: Rejects invalid name
-      if: ${{ steps.locate-tree.outputs.pathname == '' }}
+        git config -f .gitmodules --get 'submodule.${{ env.name }}.path' | sed -En "/^$/q1; s/^(.*)$/path=\1/;p;" >> $GITHUB_OUTPUT
+        git config -f .gitmodules --get 'submodule.${{ env.name }}.url' | sed -En "/^$/q1; s/^(.*)$/url=\1/;p;" >> $GITHUB_OUTPUT
       shell: bash
+    - name: Reject names if not found in .gitmodules
+      env:
+        name: ${{ inputs.name }}
+        path: ${{ steps.gitmodules.outputs.path }}
+      if: ${{ env.path == '' }}
       run: |
-        echo "::error line=22::${{ format('the name {0} is not defined in the HEAD.', inputs.name) }}"
+        echo "::error::${{ format('the name {0} is ambiguous in the HEAD.', env.name) }}"
         exit 1
-    - id: "tree-fields"
-      if: ${{ success() }}
-      name: Describes the the submodule ref
       shell: bash
+    - name: Reject urls out of support
+      env:
+        url: ${{ steps.gitmodules.outputs.url }}
+      if: ${{ ! startsWith(env.url, 'https://github.com/') }}
       run: |
-        printf "url=%s\n" $(git config -f .gitmodules --get 'submodule.${{ inputs.name }}.url') >> $GITHUB_OUTPUT
-        git ls-tree --format 'path=%(path)' HEAD "${{ steps.locate-tree.outputs.pathname }}" >> $GITHUB_OUTPUT
-        git ls-tree --format 'ref=%(objectname)' HEAD "${{ steps.locate-tree.outputs.pathname }}" >> $GITHUB_OUTPUT
-        
+        echo "::error::${{ format('URL {0} is not supported.', env.url) }}"
+        exit 1
+      shell: bash
+    - name: Provide outputs
+      id: head
+      env:
+        path: ${{ steps.gitmodules.outputs.path }}
+      if: ${{ success() }}
+      run: |
+        git ls-tree --format 'path=%(path)' HEAD "${{ env.path }}" >> $GITHUB_OUTPUT
+        git ls-tree --format 'ref=%(objectname)' HEAD "${{ env.path }}" >> $GITHUB_OUTPUT
+      shell: bash
+    - name: Provide outputs
+      id: url
+      env:
+        url: ${{ steps.gitmodules.outputs.url }}
+      if: ${{ success() }}
+      run: |
+        echo ${{ env.url }} | sed -En "s/^https\:\/\/github\.com\/(.+)$/\1/; s/^(.+)(\.git)?$/repository=\1/;p;" >> $GITHUB_OUTPUT
+      shell: bash
+ 
