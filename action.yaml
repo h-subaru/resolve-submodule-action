@@ -10,7 +10,7 @@ outputs:
     value: "${{ steps.gitmodules.outputs.path }}"
   ref:
     description: "Ref of the commit in the submodule, that the superproject holds"
-    value: "${{ steps.tree-fields.outputs.ref }}"
+    value: "${{ steps.head.outputs.ref }}"
   url:
     value: "${{ steps.gitmodules.outputs.url }}"
 runs:
@@ -26,7 +26,7 @@ runs:
       run: |
         echo "::error line=22::${{ format('the name {0} is not defined in the HEAD.', inputs.name) }}"
         exit 1
-    - id: "tree-fields"
+    - id: head
       if: ${{ success() }}
       name: Describes the the submodule ref
       shell: bash
