@@ -11,6 +11,9 @@ outputs:
   ref:
     description: "Ref of the commit in the submodule, that the superproject holds"
     value: "${{ steps.head.outputs.ref }}"
+  repository:
+    description: "Git repository name from where to clone the submodule contents"
+    value: "${{ steps.url.outputs.repository }}" 
   url:
     value: "${{ steps.gitmodules.outputs.url }}"
 runs:
@@ -41,4 +44,11 @@ runs:
       run: |
         git ls-tree --format 'path=%(path)' HEAD "${{ env.path }}" >> $GITHUB_OUTPUT
         git ls-tree --format 'ref=%(objectname)' HEAD "${{ env.path }}" >> $GITHUB_OUTPUT
+    - id: url
+      env:
+        url: ${{ steps.gitmodules.outputs.url }}
+      shell: bash
+      if: ${{ success() }}
+      run: |
+        echo ${{ env.url }} | sed -En "s/^https\:\/\/github\.com\/(.+)$/\1/; s/^(.+)(\.git)?$/repository=\1/;p;" >> $GITHUB_OUTPUT
  
