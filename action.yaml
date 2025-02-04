@@ -36,8 +36,9 @@ runs:
       if: ${{ success() }}
       name: Describes the the submodule ref
       shell: bash
+      env:
+        path: ${{ steps.gitmodules.outputs.path }}
       run: |
-        printf "url=%s\n" $(git config -f .gitmodules --get 'submodule.${{ inputs.name }}.url') >> $GITHUB_OUTPUT
-        git ls-tree --format 'path=%(path)' HEAD "${{ steps.locate-tree.outputs.pathname }}" >> $GITHUB_OUTPUT
-        git ls-tree --format 'ref=%(objectname)' HEAD "${{ steps.locate-tree.outputs.pathname }}" >> $GITHUB_OUTPUT
-        
+        git ls-tree --format 'path=%(path)' HEAD "${{ env.path }}" >> $GITHUB_OUTPUT
+        git ls-tree --format 'ref=%(objectname)' HEAD "${{ env.path }}" >> $GITHUB_OUTPUT
+ 
