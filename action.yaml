@@ -18,8 +18,11 @@ runs:
   steps:
     - id: gitmodules
       shell: bash
+      env:
+        name: ${{ inputs.name }}
       run: |
-        printf "pathname=%s\n" $(git config -f .gitmodules --get 'submodule.${{ inputs.name }}.path') >> $GITHUB_OUTPUT
+        git config -f .gitmodules --get 'submodule.${{ env.name }}.path' | sed -En "/^$/q1; s/^(.*)$/path=\1/;p;" >> $GITHUB_OUTPUT
+        git config -f .gitmodules --get 'submodule.${{ env.name }}.url' | sed -En "/^$/q1; s/^(.*)$/url=\1/;p;" >> $GITHUB_OUTPUT
     - name: Rejects invalid name
       if: ${{ steps.locate-tree.outputs.pathname == '' }}
       shell: bash
