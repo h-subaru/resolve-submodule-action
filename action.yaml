@@ -19,44 +19,46 @@ outputs:
 runs:
   using: composite
   steps:
-    - id: gitmodules
-      shell: bash
+    - name: Provide outputs
+      id: gitmodules
       env:
         name: ${{ inputs.name }}
       run: |
         git config -f .gitmodules --get 'submodule.${{ env.name }}.path' | sed -En "/^$/q1; s/^(.*)$/path=\1/;p;" >> $GITHUB_OUTPUT
         git config -f .gitmodules --get 'submodule.${{ env.name }}.url' | sed -En "/^$/q1; s/^(.*)$/url=\1/;p;" >> $GITHUB_OUTPUT
-    - name: Rejects invalid name
-      if: ${{ env.path == '' }}
       shell: bash
+    - name: Reject names if not found in .gitmodules
       env:
         name: ${{ inputs.name }}
         path: ${{ steps.gitmodules.outputs.path }}
+      if: ${{ env.path == '' }}
       run: |
         echo "::error::${{ format('the name {0} is ambiguous in the HEAD.', env.name) }}"
         exit 1
-    - env:
-        url: ${{ steps.gitmodules.outputs.url }}
       shell: bash
+    - name: Reject urls out of support
+      env:
+        url: ${{ steps.gitmodules.outputs.url }}
       if: ${{ ! startsWith(env.url, 'https://github.com/') }}
       run: |
         echo "::error::${{ format('URL {0} is not supported.', env.url) }}"
         exit 1
-    - id: head
-      if: ${{ success() }}
-      name: Describes the the submodule ref
       shell: bash
+    - name: Provide outputs
+      id: head
       env:
         path: ${{ steps.gitmodules.outputs.path }}
+      if: ${{ success() }}
       run: |
         git ls-tree --format 'path=%(path)' HEAD "${{ env.path }}" >> $GITHUB_OUTPUT
         git ls-tree --format 'ref=%(objectname)' HEAD "${{ env.path }}" >> $GITHUB_OUTPUT
-    - id: url
+      shell: bash
+    - name: Provide outputs
+      id: url
       env:
         url: ${{ steps.gitmodules.outputs.url }}
-      shell: bash
       if: ${{ success() }}
       run: |
         echo ${{ env.url }} | sed -En "s/^https\:\/\/github\.com\/(.+)$/\1/; s/^(.+)(\.git)?$/repository=\1/;p;" >> $GITHUB_OUTPUT
-      
+      shell: bash
  
