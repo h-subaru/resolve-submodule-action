@@ -31,3 +31,50 @@ outputs:
   url:
     description: the Git repository url where to clone the submodule contents from
 ```
+
+### Example
+
+If you have a .gitmodules in your superproject:
+
+```toml
+[submodule "blobcat-server"]
+  url = https://github.com/example-user/blobcat-server.git
+  path = lib/blobcat-server
+  active = true
+```
+
+You can write like this:
+
+```yaml:./.github/workflows/your-workflow.yaml
+...
+jobs:
+  checkout-repo:
+    steps:
+      # (1) Checkout your repository first.
+      - name: Checkout main repo
+        uses: actions/checkout@v4
+
+      # (2) Find the submodule by `name`.
+      - uses: h-subaru/resolve-submodule-action@v1
+        # Set step `id` for following steps
+        id: server
+        with:
+          name: blobcat-server
+
+      # (3) Checkout the private repository
+      - uses: actions/checkout@v4
+        with:
+          # `steps.<step-id>.outputs.<output-id>`
+          repository: ${{ steps.server.outputs.repository }}
+          ref: ${{ steps.server.outputs.ref }}
+          path: ${{ steps.server.outputs.path }}
+          # specify other keys you need, such as `token`, `ssh_key`, etc......
+          token: ${{ secrets.BLOBCAT_SVR_PAT }}
+      ...
+```
+
+Limitations
+----------
+
+Supports Linux Runners only.
+
