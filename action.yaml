@@ -1,20 +1,26 @@
-name: Resolve the submodule by name in the repository.
+name: Resolve Submodule by Name
+author: HASHIMOTO Subaru （h-subaru）
+branding:
+  color: orange
+  icon: git-commit
+description: GitHub Action 'h-subaru/resolve-submodule-action' provides the SHA-1 ref and relevant metadata for the submodule in the current HEAD.
 inputs:
   name:
     required: true
-    description: "The submodule name, found in the section name in .gitmodules"
+    description: the submodule name. Found in the section name in .gitmodules.
 
 outputs:
   path:
-    description: "Path of the submodule relative to superproject"
+    description: the path to the submodule working directory, under the superproject.
     value: "${{ steps.gitmodules.outputs.path }}"
   ref:
-    description: "Ref of the commit in the submodule, that the superproject holds"
+    description: the SHA-1 ref of the commit in the submodule, which the superproject tracks.
     value: "${{ steps.head.outputs.ref }}"
   repository:
-    description: "Git repository name from where to clone the submodule contents"
+    description: the Git repository name of the submodule.
     value: "${{ steps.url.outputs.repository }}" 
   url:
+    description: the Git repository url where to clone the submodule contents from
     value: "${{ steps.gitmodules.outputs.url }}"
 runs:
   using: composite
