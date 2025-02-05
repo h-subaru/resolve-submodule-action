@@ -1,4 +1,9 @@
-name: Resolve the submodule by name in the repository.
+name: Resolve Submodule by Name
+author: HASHIMOTO Subaru （h-subaru）
+branding:
+  color: orange
+  icon: git-commit
+description: GitHub Action 'h-subaru/resolve-submodule-action' provides the SHA-1 ref and relevant metadata for the submodule in the current HEAD.
 inputs:
   name:
     required: true
