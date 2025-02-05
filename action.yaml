@@ -3,7 +3,7 @@ author: HASHIMOTO Subaru （h-subaru）
 branding:
   color: orange
   icon: git-commit
-description: GitHub Action 'h-subaru/resolve-submodule-action' provides the SHA-1 ref and relevant metadata for the submodule in the current HEAD.
+description: Provides the SHA-1 ref and relevant metadata of the submodule in the current HEAD.
 inputs:
   name:
     required: true
