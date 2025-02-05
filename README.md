@@ -58,14 +58,15 @@ jobs:
       - name: Checkout main repo
         uses: actions/checkout@v4
 
-      # (2) Find the submodule by `name`.
+      # (2) Specify the submodule name.
       - uses: h-subaru/resolve-submodule-action@v1
         # Set step `id` for following steps
         id: server
         with:
           name: blobcat-server
 
-      # (3) Checkout the private repository
+      # (3) Checkout the repository.
+      
       - uses: actions/checkout@v4
         with:
           # `steps.<step-id>.outputs.<output-id>`
