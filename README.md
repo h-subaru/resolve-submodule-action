@@ -3,11 +3,15 @@
 # Resolve Submodule by Name
 
 GitHub Action `h-subaru/resolve-submodule-action` provides the SHA-1 ref and relevant metadata for the submodule in the current HEAD.
+
+😎️ Features
+---------
+
 - Tracks the latest .gitmodules settings, to reduce the hard-coded values in workflow.
 - Incorporating with the official action [`actions/checkout`][market:actions:checkout], use the outputs named accodingly in `steps[*].with`. 
 
 
-Usage
+📑️ Usage
 ---------
 
 ```yaml
@@ -73,8 +77,10 @@ jobs:
       ...
 ```
 
-Limitations
+That's it! 🍵️
+
+🙇️ Limitations
 ----------
 
-Supports Linux Runners only.
+- Supports Linux Runners only.
 
