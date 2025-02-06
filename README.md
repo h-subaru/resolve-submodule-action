@@ -40,7 +40,7 @@ outputs:
 
 If you have a .gitmodules in your superproject:
 
-```toml
+```
 [submodule "blobcat-server"]
   url = https://github.com/example-user/blobcat-server.git
   path = lib/blobcat-server
